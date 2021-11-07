@@ -6,13 +6,9 @@
     "license": "LGPL-3.0-or-later",
     "authors": [
         {
-            "name": "Leo Feyer",
-            "homepage": "https://github.com/leofeyer"
-        },
-        {
             "name": "Thorsten Gading",
             "email": "info@tossn.de
-        }
+        },
         {
             "name": "pbd-kn",
             "email": "pb-contao@gmx.de",
