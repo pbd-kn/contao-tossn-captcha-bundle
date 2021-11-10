@@ -6,8 +6,8 @@
  * @package TossnCaptcha
  */
  
-$Config = \Contao\Config::getInstance();
-if ($Config->get('tc_captchaimage')) {
+//$Config = \Contao\Config::getInstance();
+//if ($Config->get('tc_captchaimage')) {
 	$GLOBALS['TL_FFL']['tossn_captcha'] = 'PBDKN\ContaoCaptchaBundle\Resources\contao\classes\widget\CaptchaWidget';
-}
+//}
 

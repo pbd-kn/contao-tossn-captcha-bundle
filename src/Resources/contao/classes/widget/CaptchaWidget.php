@@ -37,17 +37,18 @@ class CaptchaWidget extends \Widget {
 	 * @return void
 	 */
 	public function __construct($arrAttributes = null) {
+$this->log("PBD -> constr. Captcha widget", __METHOD__, 'TL_GENERAL');
+$kasd=;
 		parent::__construct($arrAttributes);
-
 		$this->Config = \Contao\Config::getInstance();
 
 		$this->arrAttributes['required'] = true;
 		$this->arrConfiguration['mandatory'] = true;
-
-		$this->CaptchaService = new \TossnCaptcha\Service\CaptchaService;
+		$this->CaptchaService = new \PBDKN\ContaoCaptchaBundle\Resources\contao\classes\service\CaptchaService;
 		$this->CaptchaService->createCaptcha();
 		$this->arrConfiguration['captcha_hash'] = $this->CaptchaService->getHash();
 		$this->arrConfiguration['captcha_image'] = $this->CaptchaService->getImageName();
+$this->log("PBD <- constr. Captcha widget", __METHOD__, 'TL_GENERAL');
 	}
 
 	/**
@@ -67,9 +68,9 @@ class CaptchaWidget extends \Widget {
 	 * @return string
 	 */
 	public function parse($atttibutes = null) {
-		if (!$this->Config->get('tc_captchaimage')) {
-			return '';
-		}
+//		if (!$this->Config->get('tc_captchaimage')) {
+//			return '';
+//		}
 
 		return parent::parse($atttibutes);
 	}
