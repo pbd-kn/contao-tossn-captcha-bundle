@@ -55,8 +55,12 @@ class CaptchaService {
 	/**
 	 * @var string
 	 */
-	protected $captchaImagePath = 'system/modules/tossn_captcha/assets/captcha';
-
+	//protected $captchaImagePath = 'system/modules/tossn_captcha/assets/captcha';
+	protected $VendorcaptchaImagePath = '';        // Path in dem die vergebenen Images liegen
+	/**
+	 * @var string
+	 */
+    protected $vendorPath = 'vendor/pbd-kn/contao-tossncaptcha-bundle/';
 	/**
 	 * @var integer
 	 */
@@ -75,31 +79,48 @@ class CaptchaService {
 	/**
 	 * @var string
 	 */
-	protected $backgroundImage = 'system/modules/tossn_captcha/resource/image/blank.png';
+	protected $VendorbackgroundImage = '';                     // Backgound Image
+	protected $VendorblankImage = '';                          // Default background Image
+    protected $rootDir='';
 
 	/**
 	 * @var string
 	 */
-	protected $captchaFont = 'system/modules/tossn_captcha/resource/font/default.ttf';
-
+	protected $VendorcaptchaFont = '';
+    protected $files_url ='';
 	/**
 	 * @return void
 	 */
 	public function __construct() {
+\System::log('PBD -> constr. Captcha Service --------------------------------------------', __METHOD__, 'TL_GENERAL');
+        $container = \System::getContainer();
+        $this->rootDir = $container->getParameter('kernel.project_dir').'/';
+//\System::log('PBD .. Captcha Service rootDir '.$this->rootDir, __METHOD__, 'TL_GENERAL');
+
 		$this->Config = \Contao\Config::getInstance();
 		$this->setProperties();
 
-		if (!is_dir(TL_ROOT.'/'.TL_FILES_URL.$this->captchaImagePath)) {
-			mkdir(TL_ROOT.'/'.TL_FILES_URL.$this->captchaImagePath, 0777, true);
+		if (!is_dir($this->rootDir.$this->VendorcaptchaImagePath)) {
+// imagepath enthaelt die schon vergebenen Images
+\System::log('PBD .. constr. createimgepath '.$this->rootDir.$this->VendorcaptchaImagePath, __METHOD__, 'TL_GENERAL');
+			mkdir($this->rootDir.$this->VendorcaptchaImagePath, 0777, true);
 		}
 		$this->Database = \Database::getInstance();
 		$this->deleteOldEntries();
+\System::log('PBD <- constr. Captcha Service --------------------------------------------', __METHOD__, 'TL_GENERAL');
 	}
 
 	/**
 	 * @return void
 	 */
 	protected function setProperties() {
+\System::log("PBD -> Captcha Service setProperties", __METHOD__, 'TL_GENERAL');
+        $this->VendorblankImage  = $this->vendorPath.'src/Resources/contao/resource/image/blank.png';
+		$this->VendorcaptchaFont = $this->vendorPath.'src/Resources/contao/resource/font/default.ttf';
+		$this->VendorcaptchaImagePath = $this->vendorPath.'src/Resources/contao/assets/captcha/';
+        $this->VendorbackgroundImage =$this->VendorblankImage;               // default
+//\System::log('PBD .. Captcha Service setProperties VendorblankImage '.$this->VendorblankImage, __METHOD__, 'TL_GENERAL');
+
 		if ($this->Config->get('tc_length') && (int)$this->Config->get('tc_length') > 0) {
 			$this->numChars = (int)$this->Config->get('tc_length');
 		}
@@ -109,18 +130,23 @@ class CaptchaService {
 		if ($this->Config->get('tc_chars')) {
 			$this->charPool = $this->Config->get('tc_chars');
 		}
+//\System::log('PBD .. Captcha Service setProperties1 VendorbackgroundImage '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 		if ($this->Config->get('tc_bgimage') && $this->Config->get('tc_bgimage') != '') {
+//\System::log('PBD .. Captcha Service setProperties tc_bgimage '.$this->Config->get('tc_bgimage'), __METHOD__, 'TL_GENERAL');
 			$objFile = \FilesModel::findByPk((string)$this->Config->get('tc_bgimage'));
-			if ($objFile && is_file(TL_ROOT.'/'.TL_FILES_URL.$objFile->path)) {
-				$this->backgroundImage = $objFile->path;
-			}
+//\System::log('PBD .. Captcha Service setProperties objFile Path '.$objFile->path, __METHOD__, 'TL_GENERAL');
+			if ($objFile && is_file($this->rootDir.$objFile->path)) {
+				$this->VendorbackgroundImage = $objFile->path;
+			} 
 		}
+//\System::log('PBD .. Captcha Service setProperties2 VendorbackgroundImage '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 		if ($this->Config->get('tc_font') && $this->Config->get('tc_font') != '') {
 			$objFile = \FilesModel::findByPk((string)$this->Config->get('tc_font'));
-			if ($objFile && is_file(TL_ROOT.'/'.TL_FILES_URL.$objFile->path)) {
+			if ($objFile && is_file($this->rootDir.'/'.TL_FILES_URL.$objFile->path)) {
 				$this->captchaFont = $objFile->path;
-			}
+			} 
 		}
+\System::log('PBD <- Captcha Service setProperties VendorbackgroundImage: '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 	}
 
 	/**
@@ -153,7 +179,7 @@ class CaptchaService {
 		$datas = $this->Database->prepare($query)->execute($time)->fetchAllAssoc();
 		if (is_array($datas) && !empty($datas)) {
 			foreach ($datas as $data) {
-				@unlink(TL_ROOT.'/'.TL_FILES_URL.$this->captchaImagePath.'/'.$data['hash'].'.png');
+				@unlink($this->rootDir.$this->VendorcaptchaImagePath.'/'.$data['hash'].'.png');
 			}
 		}
 
@@ -165,20 +191,21 @@ class CaptchaService {
 	 * @return void
 	 */
 	public function createCaptcha() {
-		$blankImage = TL_ROOT.'/'.TL_FILES_URL.$this->backgroundImage;
-		$imagesize = getimagesize($blankImage);
+\System::log('PBD -> Captcha Service createCaptcha blankimage '.$this->rootDir.$this->VendorblankImage, __METHOD__, 'TL_GENERAL');
+\System::log('PBD .. Captcha Service createCaptcha backgroundImage '.$this->rootDir.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
+		$imagesize = getimagesize($this->rootDir.$this->VendorbackgroundImage);
 
-		switch (strtolower(substr($this->backgroundImage, strrpos($this->backgroundImage, '.') + 1))) {
+		switch (strtolower(substr($this->VendorbackgroundImage, strrpos($this->VendorbackgroundImage, '.') + 1))) {
 			case 'png':
-				$image = imagecreatefrompng($blankImage);
+				$image = imagecreatefrompng($this->rootDir.$this->VendorbackgroundImage);
 			break;
 
 			case 'gif':
-				$image = imagecreatefromgif($blankImage);
+				$image = imagecreatefromgif($this->rootDir.$this->VendorbackgroundImage);
 			break;
 
 			default:
-				$image = imagecreatefromjpeg($blankImage);
+				$image = imagecreatefromjpeg($this->rootDir.$this->VendorbackgroundImage);
 			break;
 		}
 
@@ -189,6 +216,7 @@ class CaptchaService {
 		$beginY = ceil(($imagesize[1] + imagefontheight($this->fontSize)) / 2);
 
 		$count = strlen($text);
+
 		for ($i = 0; $i < $count; $i++) {
 			$color_array = $this->getColor();
 			$color = imagecolorallocate($image, $color_array[0], $color_array[1], $color_array[2]);
@@ -197,12 +225,21 @@ class CaptchaService {
 			$y = $beginY + rand(-4, 4);
 			$angle = rand(-10, 10);
 
-			$fontFile = TL_ROOT.'/'.TL_FILES_URL.$this->captchaFont;
+			$fontFile = $this->rootDir.$this->VendorcaptchaFont;
+//\System::log('PBD .. Captcha Service createCaptcha fontFile '.$fontFile.' x '.$x.' y '.$y, __METHOD__, 'TL_GENERAL');
 			imagettftext($image, $this->fontSize, $angle, $x, $y, $color, $fontFile, $text{$i});
 		}
 
-		$imageName = TL_FILES_URL.$this->captchaImagePath.'/'.$hash.'.png';
-		imagepng($image, TL_ROOT.'/'.$imageName);
+		//$imageName = TL_FILES_URL.$this->captchaImagePath.'/'.$hash.'.png';
+		//imagepng($image, TL_ROOT.'/'.$imageName);
+
+		$imageName = $this->rootDir.$this->VendorcaptchaImagePath.$hash.'.png';
+\System::log('PBD .. Captcha Service createCaptcha imageName '.$imageName, __METHOD__, 'TL_GENERAL');
+		if (imagepng($image,$imageName)){
+\System::log('PBD .. Captcha Service createCaptcha return true ', __METHOD__, 'TL_GENERAL');
+        }else {
+\System::log('PBD .. Captcha Service createCaptcha return false ', __METHOD__, 'TL_GENERAL');
+        }
 		imagedestroy($image);
 
 		$insert = array(
@@ -210,7 +247,7 @@ class CaptchaService {
 			'text' => $text,
 			'tstamp' => time()
 		);
-		$this->Database->prepare("INSERT INTO tl_tossn_captcha %s ")->set($insert)->execute();
+		$this->Database->prepare("INSERT INTO tl_tossn_captcha %s ")->set($insert)->execute();   // erzeuge Eintrag in DB
 
 		$this->lastImageName = $imageName;
 		$this->lastHash = $hash;
@@ -276,6 +313,7 @@ class CaptchaService {
 	 * @return string
 	 */
 	public function getImageName() {
+\System::log('PBD .. Captcha Service getImageName imageName '.$this->lastImageName, __METHOD__, 'TL_GENERAL');
 		return $this->lastImageName;
 	}
 

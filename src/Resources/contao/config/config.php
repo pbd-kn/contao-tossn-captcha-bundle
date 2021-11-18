@@ -11,3 +11,4 @@
 	$GLOBALS['TL_FFL']['tossn_captcha'] = 'PBDKN\ContaoCaptchaBundle\Resources\contao\classes\widget\CaptchaWidget';
 //}
 
+
