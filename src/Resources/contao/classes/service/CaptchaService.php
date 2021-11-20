@@ -180,11 +180,11 @@ class CaptchaService {
 		if (is_array($datas) && !empty($datas)) {
 			foreach ($datas as $data) {
                 $fi=$this->rootDir.'web/'.$this->captchaImagePath.'/'.$data['hash'].'.png';
-\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
 				if (unlink($fi)) {
-\System::log('PBD .. Captcha Service deleteOldEntries delete File OK', __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service deleteOldEntries delete File OK', __METHOD__, 'TL_GENERAL');
                 } else {
-\System::log('PBD .. Captcha Service deleteOldEntries delete File NOK', __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service deleteOldEntries delete File NOK', __METHOD__, 'TL_GENERAL');
                 }
 			}
 		}

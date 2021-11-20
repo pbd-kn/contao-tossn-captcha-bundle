@@ -3,7 +3,7 @@
 /vendor/
 
 # ignore generated images,
-/src/Resources/contao/assets/captcha/*
+/src/Resources/public/assets/captcha/*
 
 
 # PhpUnit
