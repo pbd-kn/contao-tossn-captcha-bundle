@@ -1,0 +1,11 @@
+# Composer
+/composer.lock
+/vendor/
+
+# ignore generated images,
+/src/Resources/contao/assets/captcha/*
+
+
+# PhpUnit
+/.phpunit.result.cache
+/phpunit.xml
