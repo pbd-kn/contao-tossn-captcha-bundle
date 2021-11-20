@@ -16,7 +16,6 @@ class Plugin implements BundlePluginInterface
 {
     public function getBundles(ParserInterface $parser)
     {
-        echo "PBD getbundles ContaoCaptchaBundle plugin";
         return [
             BundleConfig::create(ContaoCaptchaBundle::class)
                 ->setLoadAfter([ContaoCoreBundle::class]),
