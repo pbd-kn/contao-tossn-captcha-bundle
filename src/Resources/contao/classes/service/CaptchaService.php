@@ -56,7 +56,7 @@ class CaptchaService {
 	 * @var string
 	 */
 	//protected $captchaImagePath = 'system/modules/tossn_captcha/assets/captcha';
-	protected $VendorcaptchaImagePath = '';        // Path in dem die vergebenen Images liegen
+	protected $captchaImagePath = '';        // Path in dem die vergebenen Images liegen
 	/**
 	 * @var string
 	 */
@@ -92,7 +92,7 @@ class CaptchaService {
 	 * @return void
 	 */
 	public function __construct() {
-\System::log('PBD -> constr. Captcha Service --------------------------------------------', __METHOD__, 'TL_GENERAL');
+//\System::log('PBD -> constr. Captcha Service --------------------------------------------', __METHOD__, 'TL_GENERAL');
         $container = \System::getContainer();
         $this->rootDir = $container->getParameter('kernel.project_dir').'/';
 //\System::log('PBD .. Captcha Service rootDir '.$this->rootDir, __METHOD__, 'TL_GENERAL');
@@ -100,26 +100,26 @@ class CaptchaService {
 		$this->Config = \Contao\Config::getInstance();
 		$this->setProperties();
 
-		if (!is_dir($this->rootDir.$this->VendorcaptchaImagePath)) {
+		if (!is_dir($this->rootDir.$this->captchaImagePath)) {
 // imagepath enthaelt die schon vergebenen Images
-\System::log('PBD .. constr. createimgepath '.$this->rootDir.$this->VendorcaptchaImagePath, __METHOD__, 'TL_GENERAL');
-			mkdir($this->rootDir.$this->VendorcaptchaImagePath, 0777, true);
+//\System::log('PBD .. constr. make dir createimgepath '.$this->rootDir.$this->captchaImagePath, __METHOD__, 'TL_GENERAL');
+			mkdir($this->rootDir.$this->captchaImagePath, 0777, true);
 		}
 		$this->Database = \Database::getInstance();
 		$this->deleteOldEntries();
-\System::log('PBD <- constr. Captcha Service --------------------------------------------', __METHOD__, 'TL_GENERAL');
+//\System::log('PBD <- constr. Captcha Service --------------------------------------------', __METHOD__, 'TL_GENERAL');
 	}
 
 	/**
 	 * @return void
 	 */
 	protected function setProperties() {
-\System::log("PBD -> Captcha Service setProperties", __METHOD__, 'TL_GENERAL');
+//\System::log("PBD -> Captcha Service setProperties", __METHOD__, 'TL_GENERAL');
         $this->VendorblankImage  = $this->vendorPath.'src/Resources/contao/resource/image/blank.png';
 		$this->VendorcaptchaFont = $this->vendorPath.'src/Resources/contao/resource/font/default.ttf';
-		$this->VendorcaptchaImagePath = $this->vendorPath.'src/Resources/contao/assets/captcha/';
+		$this->captchaImagePath = 'bundles/contaocaptcha/assets/captcha/'; // beim erzeugen des Bildes wird es unter web/... abgelegt
         $this->VendorbackgroundImage =$this->VendorblankImage;               // default
-//\System::log('PBD .. Captcha Service setProperties VendorblankImage '.$this->VendorblankImage, __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service setProperties captchaImagePath '.$this->captchaImagePath, __METHOD__, 'TL_GENERAL');
 
 		if ($this->Config->get('tc_length') && (int)$this->Config->get('tc_length') > 0) {
 			$this->numChars = (int)$this->Config->get('tc_length');
@@ -146,7 +146,7 @@ class CaptchaService {
 				$this->captchaFont = $objFile->path;
 			} 
 		}
-\System::log('PBD <- Captcha Service setProperties VendorbackgroundImage: '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
+//\System::log('PBD <- Captcha Service setProperties VendorbackgroundImage: '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 	}
 
 	/**
@@ -179,7 +179,13 @@ class CaptchaService {
 		$datas = $this->Database->prepare($query)->execute($time)->fetchAllAssoc();
 		if (is_array($datas) && !empty($datas)) {
 			foreach ($datas as $data) {
-				@unlink($this->rootDir.$this->VendorcaptchaImagePath.'/'.$data['hash'].'.png');
+                $fi=$this->rootDir.'web/'.$this->captchaImagePath.'/'.$data['hash'].'.png';
+\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
+				if (unlink($fi)) {
+\System::log('PBD .. Captcha Service deleteOldEntries delete File OK', __METHOD__, 'TL_GENERAL');
+                } else {
+\System::log('PBD .. Captcha Service deleteOldEntries delete File NOK', __METHOD__, 'TL_GENERAL');
+                }
 			}
 		}
 
@@ -191,8 +197,8 @@ class CaptchaService {
 	 * @return void
 	 */
 	public function createCaptcha() {
-\System::log('PBD -> Captcha Service createCaptcha blankimage '.$this->rootDir.$this->VendorblankImage, __METHOD__, 'TL_GENERAL');
-\System::log('PBD .. Captcha Service createCaptcha backgroundImage '.$this->rootDir.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
+//\System::log('PBD -> Captcha Service createCaptcha blankimage '.$this->rootDir.$this->VendorblankImage, __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service createCaptcha backgroundImage '.$this->rootDir.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 		$imagesize = getimagesize($this->rootDir.$this->VendorbackgroundImage);
 
 		switch (strtolower(substr($this->VendorbackgroundImage, strrpos($this->VendorbackgroundImage, '.') + 1))) {
@@ -233,14 +239,14 @@ class CaptchaService {
 		//$imageName = TL_FILES_URL.$this->captchaImagePath.'/'.$hash.'.png';
 		//imagepng($image, TL_ROOT.'/'.$imageName);
 
-		$imageName = $this->rootDir.$this->VendorcaptchaImagePath.$hash.'.png';
-\System::log('PBD .. Captcha Service createCaptcha imageName '.$imageName, __METHOD__, 'TL_GENERAL');
+		$imageName = $this->rootDir.'web/'.$this->captchaImagePath.$hash.'.png';
+//\System::log('PBD .. Captcha Service createCaptcha imageName '.$imageName, __METHOD__, 'TL_GENERAL');
 		if (imagepng($image,$imageName)){
-\System::log('PBD .. Captcha Service createCaptcha return true ', __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service createCaptcha return true ', __METHOD__, 'TL_GENERAL');
         }else {
-\System::log('PBD .. Captcha Service createCaptcha return false ', __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service createCaptcha return false ', __METHOD__, 'TL_GENERAL');
         }
-		imagedestroy($image);
+		imagedestroy($image);       // ist nun gespeichert unter $this->rootDir.'web/.$this->captchaImagePath.$hash.'.png' 
 
 		$insert = array(
 			'hash' => $hash,
@@ -249,7 +255,7 @@ class CaptchaService {
 		);
 		$this->Database->prepare("INSERT INTO tl_tossn_captcha %s ")->set($insert)->execute();   // erzeuge Eintrag in DB
 
-		$this->lastImageName = $imageName;
+        $this->lastImageName = $this->captchaImagePath.$hash.'.png';   // wird so dem Template uebergeben, damit der Zugriff ueber <img src=... klappt
 		$this->lastHash = $hash;
 	}
 
@@ -313,7 +319,7 @@ class CaptchaService {
 	 * @return string
 	 */
 	public function getImageName() {
-\System::log('PBD .. Captcha Service getImageName imageName '.$this->lastImageName, __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service getImageName imageName '.$this->lastImageName, __METHOD__, 'TL_GENERAL');
 		return $this->lastImageName;
 	}
 
