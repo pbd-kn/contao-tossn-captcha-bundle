@@ -1,7 +1,7 @@
 {
     "name": "pbd-kn/contao-tossncaptcha-bundle",
     "type": "contao-bundle",
-    "description": "get Input Variables",
+    "description": "TossnCaptcha Captcha without Google",
     "homepage": "https://contao.org",
     "license": "LGPL-3.0-or-later",
     "authors": [
