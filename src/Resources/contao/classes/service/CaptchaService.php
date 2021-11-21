@@ -100,10 +100,10 @@ class CaptchaService {
 		$this->Config = \Contao\Config::getInstance();
 		$this->setProperties();
 
-		if (!is_dir($this->rootDir.$this->captchaImagePath)) {
+		if (!is_dir($this->rootDir.'web/'.$this->captchaImagePath)) {
 // imagepath enthaelt die schon vergebenen Images
-//\System::log('PBD .. constr. make dir createimgepath '.$this->rootDir.$this->captchaImagePath, __METHOD__, 'TL_GENERAL');
-			mkdir($this->rootDir.$this->captchaImagePath, 0777, true);
+//\System::log('PBD .. constr. make dir createimgepath '.'web/'.$this->rootDir.$this->captchaImagePath, __METHOD__, 'TL_GENERAL');
+			mkdir($this->rootDir.'web/'.$this->captchaImagePath, 0777, true);
 		}
 		$this->Database = \Database::getInstance();
 		$this->deleteOldEntries();
@@ -132,12 +132,15 @@ class CaptchaService {
 		}
 //\System::log('PBD .. Captcha Service setProperties1 VendorbackgroundImage '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 		if ($this->Config->get('tc_bgimage') && $this->Config->get('tc_bgimage') != '') {
-//\System::log('PBD .. Captcha Service setProperties tc_bgimage '.$this->Config->get('tc_bgimage'), __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service setProperties tc_bgimage '.(string)$this->Config->get('tc_bgimage'), __METHOD__, 'TL_GENERAL');
 			$objFile = \FilesModel::findByPk((string)$this->Config->get('tc_bgimage'));
 //\System::log('PBD .. Captcha Service setProperties objFile Path '.$objFile->path, __METHOD__, 'TL_GENERAL');
 			if ($objFile && is_file($this->rootDir.$objFile->path)) {
+//\System::log('PBD .. Captcha Service setProperties objFile found ', __METHOD__, 'TL_GENERAL');
 				$this->VendorbackgroundImage = $objFile->path;
-			} 
+			} else {
+\System::log('Captcha Service setProperties background file NOT found ', __METHOD__, 'TL_ERROR');
+            }
 		}
 //\System::log('PBD .. Captcha Service setProperties2 VendorbackgroundImage '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 		if ($this->Config->get('tc_font') && $this->Config->get('tc_font') != '') {
@@ -198,7 +201,7 @@ class CaptchaService {
 	 */
 	public function createCaptcha() {
 //\System::log('PBD -> Captcha Service createCaptcha blankimage '.$this->rootDir.$this->VendorblankImage, __METHOD__, 'TL_GENERAL');
-//\System::log('PBD .. Captcha Service createCaptcha backgroundImage '.$this->rootDir.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
+//\System::log('PBD .. Captcha Service createCaptcha VendorbackgroundImage '.$this->rootDir.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
 		$imagesize = getimagesize($this->rootDir.$this->VendorbackgroundImage);
 
 		switch (strtolower(substr($this->VendorbackgroundImage, strrpos($this->VendorbackgroundImage, '.') + 1))) {
@@ -212,6 +215,9 @@ class CaptchaService {
 
 			default:
 				$image = imagecreatefromjpeg($this->rootDir.$this->VendorbackgroundImage);
+                if (false === $image) {
+//\System::log('PBD .. Captcha Service createCaptcha create jpg image false ', __METHOD__, 'TL_GENERAL');
+                }
 			break;
 		}
 
