@@ -202,7 +202,7 @@ class CaptchaService
 
             $fontFile = $this->rootDir.$this->VendorcaptchaFont;
             //\System::log('PBD .. Captcha Service createCaptcha fontFile '.$fontFile.' x '.$x.' y '.$y, __METHOD__, 'TL_GENERAL');
-            imagettftext($image, $this->fontSize, $angle, $x, $y, $color, $fontFile, $text[$i]);
+            imagettftext($image, $this->fontSize, $angle,(int) $x, (int)$y, $color, $fontFile, $text[$i]);
         }
 
         //$imageName = TL_FILES_URL.$this->captchaImagePath.'/'.$hash.'.png';
