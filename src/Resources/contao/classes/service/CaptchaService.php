@@ -150,11 +150,15 @@ class CaptchaService
         $data = $this->Database->prepare($query)->execute($hash)->fetchAssoc();
 
         if ('alpha' !== $this->charPool && 'numalpha' !== $this->charPool) {
-            $data['text'] = strtolower($data['text']);
-            $text = strtolower($text);
+            if (isset($data['text'])) {
+                $data['text'] = strtolower($data['text']);
+                $text = strtolower($text);
+            } else {
+              $text="";
+            }
         }
 
-        if ('' !== trim($data['text']) && trim($data['text']) === trim($text)) {
+        if (isset($data['text']) && '' !== trim($data['text']) && trim($data['text']) === trim($text)) {
             return true;
         }
 
