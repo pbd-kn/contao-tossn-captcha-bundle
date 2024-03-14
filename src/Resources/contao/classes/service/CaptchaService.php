@@ -252,7 +252,8 @@ class CaptchaService
     protected function setProperties(): void
     {
         //\System::log("PBD -> Captcha Service setProperties", __METHOD__, 'TL_GENERAL');
-        $this->VendorblankImage = $this->vendorPath.'src/Resources/contao/resource/image/blank.png';
+        //$this->VendorblankImage = $this->vendorPath.'src/Resources/contao/resource/image/blank.png';
+        $this->VendorblankImage = $this->vendorPath.'src/Resources/contao/resource/image/blank.jpg';    // PBD png File bringt Fehler
         $this->VendorcaptchaFont = $this->vendorPath.'src/Resources/contao/resource/font/default.ttf';
         $this->captchaImagePath = 'bundles/contaocaptcha/assets/captcha/'; // beim erzeugen des Bildes wird es unter web/... abgelegt
         $this->VendorbackgroundImage = $this->VendorblankImage;               // default
