@@ -276,7 +276,7 @@ $this->logger->info('PBD .. Captcha Service setProperties1 VendorbackgroundImage
         if (\is_array($datas) && !empty($datas)) {
             foreach ($datas as $data) {
                 $fi = $this->captchaImagePath.$data['hash'].'.png';
-$this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi captchaImagePath ".$this->captchaImagePath);
+//$this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi captchaImagePath ".$this->captchaImagePath);
                 //\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
                 if (unlink($fi)) {
                     //\System::log('PBD .. Captcha Service deleteOldEntries delete File OK', __METHOD__, 'TL_GENERAL');
