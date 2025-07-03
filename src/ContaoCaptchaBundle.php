@@ -33,4 +33,9 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class ContaoCaptchaBundle extends Bundle
 {
+    public function getPath(): string
+    {
+        // Wichtig: Nur so lädt Contao src/Resources automatisch!
+        return \dirname(__DIR__);
+    }
 }

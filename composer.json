@@ -1,60 +1,57 @@
 {
-    "name": "pbd-kn/contao-tossncaptcha-bundle",
-    "type": "contao-bundle",
-    "description": "TossnCaptcha Captcha without Google",
-    "homepage": "https://contao.org",
-    "license": "LGPL-3.0-or-later",
-    "authors": [
-        {
-            "name": "Thorsten Gading",
-            "email": "info@tossn.de"
-        },
-        {
-            "name": "pbd-kn",
-            "email": "pb-contao@gmx.de",
-            "role": "Developer"
-        }
-    ],
-    "support": {
-        "email": "pb-contao@gmx.de"
+  "name": "pbd-kn/contao-tossncaptcha-bundle",
+  "type": "contao-bundle",
+  "description": "TossnCaptcha Captcha without Google",
+  "homepage": "https://contao.org",
+  "license": "LGPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Thorsten Gading",
+      "email": "info@tossn.de"
     },
-    "require": {
-        "php": "^7.2 || ^8.0",
-        "contao/core-bundle": "^4.9",
-        "symfony/config": "^4.4 || ^5.1",
-        "symfony/dependency-injection": "^4.4 || ^5.1",
-        "symfony/http-kernel": "^4.4 || ^5.1",
-        "contao/easy-coding-standard": "^4.2"
-    },
-    "conflict": {
-        "contao/manager-plugin": "<2.0 || >=3.0"
-    },
-    "require-dev": {
-        "contao/manager-plugin": "^2.0",
-        "contao/easy-coding-standard": "^4.2",
-        "phpunit/phpunit": "^8.4 || ^9",
-        "symfony/phpunit-bridge": "^4.4 || ^5.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "PBDKN\\ContaoCaptchaBundle\\":"src/"
-        }
-    },
-    "extra": {
-        "contao-manager-plugin": "PBDKN\\ContaoCaptchaBundle\\ContaoManager\\Plugin"
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "PBDKN\\ContaoCaptchaBundle\\Tests\\": "tests/"
-        }
-    },
-    "support": {
-        "issues": "https://github.com/pbd-kn/contao-tossncaptcha-bundle/issues",
-        "source": "https://github.com/contao-tossncaptcha-bundle"
-    },
-    "scripts": {
-        "cs-fixer": [
-            "vendor\\bin\\ecs check src/ tests/ --fix --ansi"
-        ]
+    {
+      "name": "pbd-kn",
+      "email": "pb-contao@gmx.de",
+      "role": "Developer"
     }
+  ],
+  "support": {
+    "email": "pb-contao@gmx.de",
+    "issues": "https://github.com/pbd-kn/contao-tossncaptcha-bundle/issues",
+    "source": "https://github.com/contao-tossncaptcha-bundle"
+  },
+  "require": {
+    "php": "^7.2|^8.0",
+    "contao/core-bundle": "^4.9|^5.0",
+    "symfony/config": "^4.4|^5.4|^6.0",
+    "symfony/dependency-injection": "^4.4|^5.4|^6.0",
+    "symfony/http-kernel": "^4.4|^5.4|^6.0"
+  },
+  "conflict": {
+    "contao/manager-plugin": "<2.0 || >=3.0"
+  },
+  "require-dev": {
+    "contao/manager-plugin": "^2.0",
+    "contao/easy-coding-standard": "^4.2",
+    "phpunit/phpunit": "^8.4|^9.0",
+    "symfony/phpunit-bridge": "^4.4|^5.4|^6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "PBDKN\\ContaoCaptchaBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "PBDKN\\ContaoCaptchaBundle\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "contao-manager-plugin": "PBDKN\\ContaoCaptchaBundle\\ContaoManager\\Plugin"
+  },
+  "scripts": {
+    "cs-fixer": [
+      "vendor\\bin\\ecs check src/ tests/ --fix --ansi"
+    ]
+  }
 }

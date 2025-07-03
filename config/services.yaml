@@ -1,0 +1,5 @@
+services:
+  PBDKN\ContaoCaptchaBundle\Service\CaptchaService:
+    public: true           # ? Damit System::getContainer()->get(...) funktioniert
+    autowire: true
+    autoconfigure: true

@@ -1,0 +1,29 @@
+<?php $GLOBALS['TL_CSS'][] = 'bundles/contaocaptcha/css/tossn-captcha.css|static'; ?>
+<?php $this->block('field'); ?>
+
+    <!-- Bild -->
+    <img src="<?= $this->captcha_image ?>" class="captcha-image" alt="Captcha" /><br>
+
+    <!-- Label + Input nebeneinander -->
+    <div class="captcha-input-group">
+        <label for="ctrl_<?= $this->id ?>"<?= $this->class ? ' class="' . $this->class . '"' : '' ?>>
+            <?= $this->label ?><?php if ($this->mandatory): ?><span class="mandatory">*</span><?php endif; ?>
+        </label>
+
+        <input type="<?= $this->type ?>"
+               name="<?= $this->name ?>"
+               id="ctrl_<?= $this->id ?>"
+               class="text<?= $this->errorClass ?><?= $this->class ? ' ' . $this->class : '' ?>"
+               value="<?= $this->value ?>"
+               <?= $this->attributes ?>>
+    </div>
+
+    <!-- Hash -->
+    <input type="hidden" name="<?= $this->name ?>_hash" value="<?= $this->captcha_hash ?>" />
+
+    <!-- Fehleranzeige -->
+    <?php if ($this->hasErrors): ?>
+        <p class="errorCaptcha"><?= $this->error ?></p>
+    <?php endif; ?>
+
+<?php $this->endblock(); ?>

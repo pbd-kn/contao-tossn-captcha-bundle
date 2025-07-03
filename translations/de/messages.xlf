@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<xliff version="1.2">
+  <file source-language="en" datatype="plaintext">
+    <body>
+      <trans-unit id="error">
+        <target>Falscher Code.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
