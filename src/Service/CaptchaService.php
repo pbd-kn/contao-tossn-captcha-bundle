@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 
-
 class CaptchaService
 {
     private string $rootDir;
@@ -96,7 +95,7 @@ class CaptchaService
     protected $VendorcaptchaFont = '';
     protected $files_url = '';
     private LoggerInterface $logger;
-
+    private bool $debug = false;
 
 
     public function __construct(ParameterBagInterface $params, LoggerInterface $logger)
@@ -105,6 +104,7 @@ class CaptchaService
         $this->config = Config::getInstance();      // ? kein Autowiring
         $this->database = Database::getInstance();  // ? ebenfalls Singleton
         $this->logger = $logger;
+        $this->debug = $params->get('kernel.debug');
         $this->bundlePublicPath = $params->get('kernel.project_dir') . '/web/bundles/contaocaptcha';
         $this->setProperties(); // ? Hier aufrufen!
         $this->deleteOldEntries();
@@ -145,7 +145,7 @@ class CaptchaService
         //$imagePath = $this->rootDir . $this->VendorbackgroundImage;
         $imagePath = $this->VendorbackgroundImage;
 
-        $this->logger->info('CaptchaService: Hintergrundbild geladen: imagePath ' . $imagePath . ' VendorbackgroundImage '.$this->VendorbackgroundImage);
+        if ($this->debug) $this->logger->info('CaptchaService: Hintergrundbild geladen: imagePath ' . $imagePath . ' VendorbackgroundImage '.$this->VendorbackgroundImage);
 
         $imagesize = getimagesize($imagePath);
 
@@ -183,7 +183,7 @@ class CaptchaService
             $angle = random_int(-10, 10);
 
             $fontFile = $this->VendorcaptchaFont;
-            $this->logger->info('PBD .. Captcha Service createCaptcha fontFile '.$fontFile.' x '.$x.' y '.$y);
+            if ($this->debug) $this->logger->info('PBD .. Captcha Service createCaptcha fontFile '.$fontFile.' x '.$x.' y '.$y);
             imagettftext($image, $this->fontSize, $angle,(int) $x, (int)$y, $color, $fontFile, $text[$i]);
         }
 
@@ -191,7 +191,7 @@ class CaptchaService
         //imagepng($image, TL_ROOT.'/'.$imageName);
 
         $imageName = $this->captchaImagePath.$hash.'.png';
-        $this->logger->info('PBD .. Captcha Service createCaptcha imageName neu'.$imageName);
+        if ($this->debug) $this->logger->info('PBD .. Captcha Service createCaptcha imageName neu'.$imageName);
         if (imagepng($image, $imageName)) {
             //\System::log('PBD .. Captcha Service createCaptcha return true ', __METHOD__, 'TL_GENERAL');
         }
@@ -234,7 +234,7 @@ class CaptchaService
         $this->VendorcaptchaFont = $this->bundlePublicPath.'/resource/font/default.ttf';
         $this->captchaImagePath = $this->bundlePublicPath.'/assets/captcha/'; // beim erzeugen des Bildes wird es unter web/... abgelegt
         $this->VendorbackgroundImage = $this->VendorblankImage;               // default
-$this->logger->info('PBD .. Captcha Service setProperties captchaImagePath '.$this->captchaImagePath.' bundlepublicPat '.$this->bundlePublicPath);
+        if ($this->debug) $this->logger->info('PBD .. Captcha Service setProperties captchaImagePath '.$this->captchaImagePath.' bundlepublicPat '.$this->bundlePublicPath);
 
         if ($this->config->get('tc_length') && (int) $this->config->get('tc_length') > 0) {
             $this->numChars = (int) $this->config->get('tc_length');
@@ -245,7 +245,7 @@ $this->logger->info('PBD .. Captcha Service setProperties captchaImagePath '.$th
         if ($this->config->get('tc_chars')) {
             $this->charPool = $this->config->get('tc_chars');
         }
-$this->logger->info('PBD .. Captcha Service setProperties1 VendorbackgroundImage '.$this->VendorbackgroundImage);
+        if ($this->debug) $this->logger->info('PBD .. Captcha Service setProperties1 VendorbackgroundImage '.$this->VendorbackgroundImage);
 
         if ($this->config->get('tc_bgimage') && '' !== $this->config->get('tc_bgimage')) {
             //\System::log('PBD .. Captcha Service setProperties tc_bgimage '.(string)$this->config->get('tc_bgimage'), __METHOD__, 'TL_GENERAL');
@@ -276,12 +276,12 @@ $this->logger->info('PBD .. Captcha Service setProperties1 VendorbackgroundImage
         if (\is_array($datas) && !empty($datas)) {
             foreach ($datas as $data) {
                 $fi = $this->captchaImagePath.$data['hash'].'.png';
-//$this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi captchaImagePath ".$this->captchaImagePath);
+                //if ($this->debug) $this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi captchaImagePath ".$this->captchaImagePath);
                 //\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
                 if (unlink($fi)) {
                     //\System::log('PBD .. Captcha Service deleteOldEntries delete File OK', __METHOD__, 'TL_GENERAL');
                 } else {
-$this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi unlinkerror ");
+                    if ($this->debug) $this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi unlinkerror ");
                 }
             }
         }
