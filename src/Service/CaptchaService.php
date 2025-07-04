@@ -6,6 +6,7 @@ use Contao\System;
 use Contao\Config;
 use Contao\Database;
 use Psr\Log\LoggerInterface;
+use Contao\FilesModel;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -249,7 +250,7 @@ class CaptchaService
 
         if ($this->config->get('tc_bgimage') && '' !== $this->config->get('tc_bgimage')) {
             //\System::log('PBD .. Captcha Service setProperties tc_bgimage '.(string)$this->config->get('tc_bgimage'), __METHOD__, 'TL_GENERAL');
-            $objFile = \FilesModel::findByPk((string) $this->config->get('tc_bgimage'));
+            $objFile = FilesModel::findByPk((string) $this->config->get('tc_bgimage'));
             //\System::log('PBD .. Captcha Service setProperties objFile Path '.$objFile->path, __METHOD__, 'TL_GENERAL');
             if ($objFile && is_file($this->rootDir.$objFile->path)) {
                 //\System::log('PBD .. Captcha Service setProperties objFile found ', __METHOD__, 'TL_GENERAL');
@@ -260,7 +261,7 @@ class CaptchaService
         }
         //\System::log('PBD .. Captcha Service setProperties2 VendorbackgroundImage '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
         if ($this->config->get('tc_font') && '' !== $this->config->get('tc_font')) {
-            $objFile = \FilesModel::findByPk((string) $this->config->get('tc_font'));
+            $objFile = FilesModel::findByPk((string) $this->config->get('tc_font'));
             if ($objFile && is_file($this->rootDir.'/'.TL_FILES_URL.$objFile->path)) {
                 $this->captchaFont = $objFile->path;
             }
@@ -278,10 +279,12 @@ class CaptchaService
                 $fi = $this->captchaImagePath.$data['hash'].'.png';
                 //if ($this->debug) $this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi captchaImagePath ".$this->captchaImagePath);
                 //\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
-                if (unlink($fi)) {
-                    //\System::log('PBD .. Captcha Service deleteOldEntries delete File OK', __METHOD__, 'TL_GENERAL');
-                } else {
-                    if ($this->debug) $this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi unlinkerror ");
+                if (file_exists($fi)) {
+                    if (unlink($fi)) {
+                        //\System::log('PBD .. Captcha Service deleteOldEntries delete File OK', __METHOD__, 'TL_GENERAL');
+                    } else {
+                        if ($this->debug) $this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi unlinkerror ");
+                    }
                 }
             }
         }
