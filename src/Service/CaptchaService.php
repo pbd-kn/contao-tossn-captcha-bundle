@@ -188,28 +188,26 @@ class CaptchaService
             imagettftext($image, $this->fontSize, $angle,(int) $x, (int)$y, $color, $fontFile, $text[$i]);
         }
 
-        //$imageName = TL_FILES_URL.$this->captchaImagePath.'/'.$hash.'.png';
-        //imagepng($image, TL_ROOT.'/'.$imageName);
-
         $imageName = $this->captchaImagePath.$hash.'.png';
         if ($this->debug) $this->logger->info('PBD .. Captcha Service createCaptcha imageName neu'.$imageName);
         if (imagepng($image, $imageName)) {
-            //\System::log('PBD .. Captcha Service createCaptcha return true ', __METHOD__, 'TL_GENERAL');
+           if ($this->debug) $this->logger->info('PBD .. Captcha Service image gespeichert als imageName neu'.$imageName);
+
+            imagedestroy($image);       // ist nun gespeichert unter public/assets/captcha/hashxxxx.png'
+
+            $insert = [
+                'hash' => $hash,
+                'text' => $text,
+                'tstamp' => time(),
+            ];
+            $this->database->prepare('INSERT INTO tl_tossn_captcha %s ')->set($insert)->execute();   // erzeuge Eintrag in DB
+
+            $this->lastImageName = '/bundles/contaocaptcha/assets/captcha/'.$hash.'.png';   // wird so dem Template uebergeben, damit der Zugriff ueber <img src=... klappt
+            $this->lastHash = $hash;
+        } else {
+            imagedestroy($image);       // ist nun gespeichert unter public/assets/captcha/hashxxxx.png'
+            $this->logger->error('PBD .. Captcha Service image Fehler beim wandeln oder speichern imageName neu'.$imageName);
         }
-        //\System::log('PBD .. Captcha Service createCaptcha return false ', __METHOD__, 'TL_GENERAL');
-
-        imagedestroy($image);       // ist nun gespeichert unter $this->rootDir.'web/.$this->captchaImagePath.$hash.'.png'
-
-        $insert = [
-            'hash' => $hash,
-            'text' => $text,
-            'tstamp' => time(),
-        ];
-        $this->database->prepare('INSERT INTO tl_tossn_captcha %s ')->set($insert)->execute();   // erzeuge Eintrag in DB
-
-        //$this->lastImageName = $this->captchaImagePath.$hash.'.png';   // wird so dem Template uebergeben, damit der Zugriff ueber <img src=... klappt
-        $this->lastImageName = '/bundles/contaocaptcha/assets/captcha/'.$hash.'.png';   // wird so dem Template uebergeben, damit der Zugriff ueber <img src=... klappt
-        $this->lastHash = $hash;
     }
 
     /**
@@ -217,7 +215,6 @@ class CaptchaService
      */
     public function getImageName()
     {
-        //\System::log('PBD .. Captcha Service getImageName imageName '.$this->lastImageName, __METHOD__, 'TL_GENERAL');
         return $this->lastImageName;
     }
 
