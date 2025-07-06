@@ -14,6 +14,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class CaptchaService
 {
     private string $rootDir;
+    protected string $webRoot;
+
     private Config $config;
     private Database $database;
     /**
@@ -102,11 +104,13 @@ class CaptchaService
     public function __construct(ParameterBagInterface $params, LoggerInterface $logger)
     {
         $this->rootDir = $params->get('kernel.project_dir') . '/';
+        $this->webRoot = is_dir($this->rootDir . 'web') ? $this->rootDir . 'web/' : $this->rootDir . 'public/';
+
         $this->config = Config::getInstance();      // ? kein Autowiring
         $this->database = Database::getInstance();  // ? ebenfalls Singleton
         $this->logger = $logger;
         $this->debug = $params->get('kernel.debug');
-        $this->bundlePublicPath = $params->get('kernel.project_dir') . '/web/bundles/contaocaptcha';
+        $this->bundlePublicPath = $this->webRoot.'bundles/contaocaptcha';
         $this->setProperties(); // ? Hier aufrufen!
         $this->deleteOldEntries();
     }
@@ -146,6 +150,7 @@ class CaptchaService
         //$imagePath = $this->rootDir . $this->VendorbackgroundImage;
         $imagePath = $this->VendorbackgroundImage;
 
+        if ($this->debug) $this->logger->info('CaptchaService: Hintergrundbild laden: VendorbackgroundImage '.$this->VendorbackgroundImage);
         if ($this->debug) $this->logger->info('CaptchaService: Hintergrundbild geladen: imagePath ' . $imagePath . ' VendorbackgroundImage '.$this->VendorbackgroundImage);
 
         $imagesize = getimagesize($imagePath);
@@ -246,17 +251,17 @@ class CaptchaService
         if ($this->debug) $this->logger->info('PBD .. Captcha Service setProperties1 VendorbackgroundImage '.$this->VendorbackgroundImage);
 
         if ($this->config->get('tc_bgimage') && '' !== $this->config->get('tc_bgimage')) {
-            //\System::log('PBD .. Captcha Service setProperties tc_bgimage '.(string)$this->config->get('tc_bgimage'), __METHOD__, 'TL_GENERAL');
+            if ($this->debug) $this->logger->info('CaptchaService: setProperties tc_bgimage '.(string)$this->config->get('tc_bgimage'));
             $objFile = FilesModel::findByPk((string) $this->config->get('tc_bgimage'));
-            //\System::log('PBD .. Captcha Service setProperties objFile Path '.$objFile->path, __METHOD__, 'TL_GENERAL');
+            if ($this->debug) $this->logger->info('CaptchaService: setProperties objFile Path '.$objFile->path);
             if ($objFile && is_file($this->rootDir.$objFile->path)) {
-                //\System::log('PBD .. Captcha Service setProperties objFile found ', __METHOD__, 'TL_GENERAL');
+                if ($this->debug) $this->logger->info('CaptchaService: setProperties objFile found '.$objFile->path);
                 $this->VendorbackgroundImage = $objFile->path;
             } else {
-                \System::log('Captcha Service setProperties background file NOT found ', __METHOD__, 'TL_ERROR');
+                $this->logger->error('Captcha Service setProperties background file NOT found ');
             }
         }
-        //\System::log('PBD .. Captcha Service setProperties2 VendorbackgroundImage '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
+        if ($this->debug) $this->logger->info('CaptchaService: setProperties2 VendorbackgroundImage '.$this->VendorbackgroundImage);
         if ($this->config->get('tc_font') && '' !== $this->config->get('tc_font')) {
             $objFile = FilesModel::findByPk((string) $this->config->get('tc_font'));
             if ($objFile && is_file($this->rootDir.'/'.TL_FILES_URL.$objFile->path)) {
