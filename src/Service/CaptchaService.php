@@ -112,6 +112,12 @@ class CaptchaService
         $this->debug = $params->get('kernel.debug');
         $this->bundlePublicPath = $this->webRoot.'bundles/contaocaptcha';
         $this->setProperties(); // ? Hier aufrufen!
+        if ($this->debug) $this->logger->info('constr. check dir createimgepath '.$this->captchaImagePath);
+        if (!is_dir($this->captchaImagePath)) {
+            if ($this->debug) $this->logger->info('constr. make dir createimgepath '.$this->captchaImagePath);
+            mkdir($this->captchaImagePath, 0777, true);
+        }
+
         $this->deleteOldEntries();
     }
 
