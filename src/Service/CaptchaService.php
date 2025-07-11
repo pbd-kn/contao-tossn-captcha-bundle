@@ -259,22 +259,28 @@ class CaptchaService
         if ($this->config->get('tc_bgimage') && '' !== $this->config->get('tc_bgimage')) {
             if ($this->debug) $this->logger->info('CaptchaService: setProperties tc_bgimage '.(string)$this->config->get('tc_bgimage'));
             $objFile = FilesModel::findByPk((string) $this->config->get('tc_bgimage'));
-            if ($this->debug) $this->logger->info('CaptchaService: setProperties objFile Path '.$objFile->path);
+            if ($this->debug) $this->logger->info('CaptchaService: setProperties  Path to tc_bgimage '.$objFile->path);
             if ($objFile && is_file($this->rootDir.$objFile->path)) {
-                if ($this->debug) $this->logger->info('CaptchaService: setProperties objFile found '.$objFile->path);
+                if ($this->debug) $this->logger->info('CaptchaService: setProperties  found '.$objFile->path);
                 $this->VendorbackgroundImage = $objFile->path;
             } else {
-                $this->logger->error('Captcha Service setProperties background file NOT found ');
+                $this->logger->error('Captcha Service setProperties background file NOT found '.$objFile->path);
             }
         }
         if ($this->debug) $this->logger->info('CaptchaService: setProperties2 VendorbackgroundImage '.$this->VendorbackgroundImage);
+
         if ($this->config->get('tc_font') && '' !== $this->config->get('tc_font')) {
+            if ($this->debug) $this->logger->info('CaptchaService: setProperties tc_font '.(string)$this->config->get('tc_font'));
             $objFile = FilesModel::findByPk((string) $this->config->get('tc_font'));
-            if ($objFile && is_file($this->rootDir.'/'.TL_FILES_URL.$objFile->path)) {
+            if ($this->debug) $this->logger->info('CaptchaService: setProperties  Path to tc_font '.$objFile->path);
+            if ($objFile && is_file($this->rootDir.$objFile->path)) {
+                if ($this->debug) $this->logger->info('CaptchaService: setProperties  found tc_font '.$objFile->path);
                 $this->captchaFont = $objFile->path;
+            } else {
+                $this->logger->error('Captcha Service setProperties Font file NOT found '.$objFile->path);
             }
         }
-        //\System::log('PBD <- Captcha Service setProperties VendorbackgroundImage: '.$this->VendorbackgroundImage, __METHOD__, 'TL_GENERAL');
+        if ($this->debug) $this->logger->info('CaptchaService: setProperties2 tc_font '.$this->captchaFont);
     }
 
     protected function deleteOldEntries(): void
