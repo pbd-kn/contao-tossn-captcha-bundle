@@ -129,19 +129,21 @@ class CaptchaService
      */
     public function checkCode($hash, $text)
     {
+        $text = trim((string) ($text ?? ''));
+
         $query = 'SELECT text FROM tl_tossn_captcha WHERE hash = ? ';
         $data = $this->database->prepare($query)->execute($hash)->fetchAssoc();
 
         if ('alpha' !== $this->charPool && 'numalpha' !== $this->charPool) {
             if (isset($data['text'])) {
-                $data['text'] = strtolower($data['text']);
+                $data['text'] = strtolower((string) $data['text']);
                 $text = strtolower($text);
-            } else {
-              $text="";
             }
         }
 
-        if (isset($data['text']) && '' !== trim($data['text']) && trim($data['text']) === trim($text)) {
+        $storedText = isset($data['text']) ? trim((string) $data['text']) : '';
+
+        if ('' !== $storedText && $storedText === $text) {
             return true;
         }
 
@@ -164,18 +166,18 @@ class CaptchaService
         switch (strtolower(substr($this->VendorbackgroundImage, strrpos($this->VendorbackgroundImage, '.') + 1))) {
             case 'png':
                 $image = imagecreatefrompng($this->VendorbackgroundImage);
-            break;
+                break;
 
             case 'gif':
                 $image = imagecreatefromgif($this->VendorbackgroundImage);
-            break;
+                break;
 
             default:
                 $image = imagecreatefromjpeg($this->VendorbackgroundImage);
                 if (false === $image) {
                     //\System::log('PBD .. Captcha Service createCaptcha create jpg image false ', __METHOD__, 'TL_GENERAL');
                 }
-            break;
+                break;
         }
 
         $hash = $this->createHash();
@@ -202,7 +204,7 @@ class CaptchaService
         $imageName = $this->captchaImagePath.$hash.'.png';
         if ($this->debug) $this->logger->info('PBD .. Captcha Service createCaptcha imageName neu'.$imageName);
         if (imagepng($image, $imageName)) {
-           if ($this->debug) $this->logger->info('PBD .. Captcha Service image gespeichert als imageName neu'.$imageName);
+            if ($this->debug) $this->logger->info('PBD .. Captcha Service image gespeichert als imageName neu'.$imageName);
 
             imagedestroy($image);       // ist nun gespeichert unter public/assets/captcha/hashxxxx.png'
 
@@ -292,12 +294,12 @@ class CaptchaService
                 $fi = $this->captchaImagePath.$data['hash'].'.png';
                 //if ($this->debug) $this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi captchaImagePath ".$this->captchaImagePath);
                 //\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
-                // Prüfen ob es eine Datei ist – nicht nur ob etwas existiert
+                // Prï¿½fen ob es eine Datei ist ï¿½ nicht nur ob etwas existiert
                 if (is_file($fi)) {
                     if (!unlink($fi) && $this->debug) { $this->logger->debug("PBD .. Captcha Service deleteOldEntries unlink failed: $fi"); }
                 } else {
                     if ($this->debug) { $this->logger->debug("PBD .. File does NOT exist: $fi");}
-                }            
+                }
             }
         }
 
@@ -321,31 +323,31 @@ class CaptchaService
         switch ($this->charPool) {
             case 'num':
                 $chars = $this->charsNum;
-            break;
+                break;
 
             case 'alphalower':
                 $chars = $this->charsLower;
-            break;
+                break;
 
             case 'alphaupper':
                 $chars = $this->charsUpper;
-            break;
+                break;
 
             case 'alpha':
                 $chars = $this->charsUpper.$this->charsLower;
-            break;
+                break;
 
             case 'numalphalower':
                 $chars = $this->charsNum.$this->charsLower;
-            break;
+                break;
 
             case 'numalphaupper':
                 $chars = $this->charsNum.$this->charsUpper;
-            break;
+                break;
 
             default:
                 $chars = $this->charsNum.$this->charsUpper.$this->charsLower;
-            break;
+                break;
         }
 
         $text = '';
