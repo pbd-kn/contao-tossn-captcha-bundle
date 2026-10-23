@@ -30,3 +30,5 @@ declare(strict_types=1);
 
 
 $GLOBALS['TL_LANG']['FFL']['tossn_captcha'] = ['Captcha security question', 'This field adds a captcha as image to the form, that has to be entered in order to submit the form.'];
+
+$GLOBALS['TL_LANG']['FFL']['tossnCaptcha'] = $GLOBALS['TL_LANG']['FFL']['tossn_captcha'];

@@ -29,4 +29,6 @@ declare(strict_types=1);
 
 
 
-$GLOBALS['TL_LANG']['FFL']['tossn_captcha'] = ['Captcha Sicherheitsfrage', 'Dieses Feld fügt dem Formular ein Captcha als Grafik hinzu, welches zum Versenden des Formulars korrekt eingetragen werden muss.'];
+$GLOBALS['TL_LANG']['FFL']['tossn_captcha'] = ['Captcha Sicherheitsfrage', 'Dieses Feld fÃ¼gt dem Formular ein Captcha als Grafik hinzu, welches zum Versenden des Formulars korrekt eingetragen werden muss.'];
+
+$GLOBALS['TL_LANG']['FFL']['tossnCaptcha'] = $GLOBALS['TL_LANG']['FFL']['tossn_captcha'];

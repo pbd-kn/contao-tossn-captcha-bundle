@@ -1,29 +1,22 @@
+<?php $this->extend('form_row'); ?>
 <?php $GLOBALS['TL_CSS'][] = 'bundles/contaocaptcha/css/tossn-captcha.css|static'; ?>
-<?php $this->block('field'); ?>
 
-    <!-- Bild -->
-    <img src="<?= $this->captcha_image ?>" class="captcha-image" alt="Captcha" /><br>
-
-    <!-- Label + Input nebeneinander -->
-    <div class="captcha-input-group">
-        <label for="ctrl_<?= $this->id ?>"<?= $this->class ? ' class="' . $this->class . '"' : '' ?>>
+<?php $this->block('label'); ?>
+    <?php if ($this->label): ?>
+        <label for="ctrl_<?= \Contao\StringUtil::specialchars($this->id) ?>">
             <?= $this->label ?><?php if ($this->mandatory): ?><span class="mandatory">*</span><?php endif; ?>
         </label>
-
-        <input type="<?= $this->type ?>"
-               name="<?= $this->name ?>"
-               id="ctrl_<?= $this->id ?>"
-               class="text<?= $this->errorClass ?><?= $this->class ? ' ' . $this->class : '' ?>"
-               value="<?= $this->value ?>"
-               <?= $this->attributes ?>>
-    </div>
-
-    <!-- Hash -->
-    <input type="hidden" name="<?= $this->name ?>_hash" value="<?= $this->captcha_hash ?>" />
-
-    <!-- Fehleranzeige -->
-    <?php if ($this->hasErrors): ?>
-        <p class="errorCaptcha"><?= $this->error ?></p>
     <?php endif; ?>
+<?php $this->endblock(); ?>
 
+<?php $this->block('field'); ?>
+    <?php if ($this->hasErrors()): ?>
+        <p class="errorCaptcha error"><?= $this->getErrorAsString() ?></p>
+    <?php endif; ?>
+    <img src="<?= \Contao\StringUtil::specialchars($this->captcha_image) ?>" class="captcha-image" alt="Captcha"><br>
+    <input type="hidden" name="<?= \Contao\StringUtil::specialchars($this->name) ?>_hash" value="<?= \Contao\StringUtil::specialchars($this->captcha_hash) ?>">
+    <input type="text" name="<?= \Contao\StringUtil::specialchars($this->name) ?>" id="ctrl_<?= \Contao\StringUtil::specialchars($this->id) ?>" class="text<?= $this->class ? ' ' . \Contao\StringUtil::specialchars($this->class) : '' ?>" value="" autocomplete="off"<?= $this->getAttributes() ?>>
+    <?php if ($this->addSubmit): ?>
+        <input type="submit" id="ctrl_<?= \Contao\StringUtil::specialchars($this->id) ?>_submit" class="submit" value="<?= \Contao\StringUtil::specialchars($this->slabel) ?>">
+    <?php endif; ?>
 <?php $this->endblock(); ?>

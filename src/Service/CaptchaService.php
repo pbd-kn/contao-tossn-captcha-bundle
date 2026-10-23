@@ -104,7 +104,7 @@ class CaptchaService
     public function __construct(ParameterBagInterface $params, LoggerInterface $logger)
     {
         $this->rootDir = $params->get('kernel.project_dir') . '/';
-        $this->webRoot = is_dir($this->rootDir . 'web') ? $this->rootDir . 'web/' : $this->rootDir . 'public/';
+        $this->webRoot = rtrim($params->get('contao.web_dir'), '/\\') . '/';
 
         $this->config = Config::getInstance();      // ? kein Autowiring
         $this->database = Database::getInstance();  // ? ebenfalls Singleton
@@ -115,7 +115,9 @@ class CaptchaService
         if ($this->debug) $this->logger->info('constr. check dir createimgepath '.$this->captchaImagePath);
         if (!is_dir($this->captchaImagePath)) {
             if ($this->debug) $this->logger->info('constr. make dir createimgepath '.$this->captchaImagePath);
-            mkdir($this->captchaImagePath, 0777, true);
+            if (!mkdir($this->captchaImagePath, 0775, true) && !is_dir($this->captchaImagePath)) {
+                throw new \RuntimeException('Cannot create captcha image directory.');
+            }
         }
 
         $this->deleteOldEntries();
@@ -129,10 +131,14 @@ class CaptchaService
      */
     public function checkCode($hash, $text)
     {
-        $text = trim((string) ($text ?? ''));
+        if (!is_string($hash) || !preg_match('/^[a-f0-9]{32}$/D', $hash) || !is_string($text)) {
+            return false;
+        }
 
-        $query = 'SELECT text FROM tl_tossn_captcha WHERE hash = ? ';
-        $data = $this->database->prepare($query)->execute($hash)->fetchAssoc();
+        $text = trim($text);
+
+        $query = 'SELECT text FROM tl_tossn_captcha WHERE hash = ? AND tstamp >= ? ';
+        $data = $this->database->prepare($query)->execute($hash, time() - 600)->fetchAssoc();
 
         if ('alpha' !== $this->charPool && 'numalpha' !== $this->charPool) {
             if (isset($data['text'])) {
@@ -161,7 +167,14 @@ class CaptchaService
         if ($this->debug) $this->logger->info('CaptchaService: Hintergrundbild laden: VendorbackgroundImage '.$this->VendorbackgroundImage);
         if ($this->debug) $this->logger->info('CaptchaService: Hintergrundbild geladen: imagePath ' . $imagePath . ' VendorbackgroundImage '.$this->VendorbackgroundImage);
 
+        if (!is_file($imagePath) || !is_readable($this->VendorcaptchaFont)) {
+            throw new \RuntimeException('Captcha background image or font is not readable.');
+        }
+
         $imagesize = getimagesize($imagePath);
+        if ($imagesize === false) {
+            throw new \RuntimeException('Invalid captcha background image.');
+        }
 
         switch (strtolower(substr($this->VendorbackgroundImage, strrpos($this->VendorbackgroundImage, '.') + 1))) {
             case 'png':
@@ -180,11 +193,21 @@ class CaptchaService
                 break;
         }
 
+        if ($image === false) {
+            throw new \RuntimeException('Cannot load captcha background image.');
+        }
+
         $hash = $this->createHash();
 
         $text = $this->getCharacters();
-        $beginX = ceil(($imagesize[0] / 2) - (($this->fontSize / 14) * (\strlen($text) * imagefontwidth($this->fontSize) / 2)));
-        $beginY = ceil(($imagesize[1] + imagefontheight($this->fontSize)) / 2);
+        $bounds = imagettfbbox($this->fontSize, 0, $this->VendorcaptchaFont, $text);
+        if ($bounds === false) {
+            imagedestroy($image);
+            throw new \RuntimeException('Cannot measure captcha font.');
+        }
+        $width = (\strlen($text) - 1) * $this->fontSize / 1.5 + $this->fontSize;
+        $beginX = max(0, ($imagesize[0] - $width) / 2);
+        $beginY = ($imagesize[1] - ($bounds[1] - $bounds[7])) / 2 - $bounds[7];
 
         $count = \strlen($text);
 
@@ -215,11 +238,12 @@ class CaptchaService
             ];
             $this->database->prepare('INSERT INTO tl_tossn_captcha %s ')->set($insert)->execute();   // erzeuge Eintrag in DB
 
-            $this->lastImageName = '/bundles/contaocaptcha/assets/captcha/'.$hash.'.png';   // wird so dem Template uebergeben, damit der Zugriff ueber <img src=... klappt
+            $this->lastImageName = 'bundles/contaocaptcha/assets/captcha/'.$hash.'.png';   // wird so dem Template uebergeben, damit der Zugriff ueber <img src=... klappt
             $this->lastHash = $hash;
         } else {
             imagedestroy($image);       // ist nun gespeichert unter public/assets/captcha/hashxxxx.png'
-            $this->logger->error('PBD .. Captcha Service image Fehler beim wandeln oder speichern imageName neu'.$imageName);
+            $this->logger->error('Cannot save captcha image.', ['path' => $imageName]);
+            throw new \RuntimeException('Cannot save captcha image.');
         }
     }
 
@@ -261,12 +285,12 @@ class CaptchaService
         if ($this->config->get('tc_bgimage') && '' !== $this->config->get('tc_bgimage')) {
             if ($this->debug) $this->logger->info('CaptchaService: setProperties tc_bgimage '.(string)$this->config->get('tc_bgimage'));
             $objFile = FilesModel::findByPk((string) $this->config->get('tc_bgimage'));
-            if ($this->debug) $this->logger->info('CaptchaService: setProperties  Path to tc_bgimage '.$objFile->path);
+            if ($this->debug) $this->logger->info('CaptchaService: setProperties  Path to tc_bgimage '.($objFile ? $objFile->path : '(missing file)'));
             if ($objFile && is_file($this->rootDir.$objFile->path)) {
-                if ($this->debug) $this->logger->info('CaptchaService: setProperties  found '.$objFile->path);
-                $this->VendorbackgroundImage = $objFile->path;
+                if ($this->debug) $this->logger->info('CaptchaService: setProperties  found '.($objFile ? $objFile->path : '(missing file)'));
+                $this->VendorbackgroundImage = $this->rootDir.$objFile->path;
             } else {
-                $this->logger->error('Captcha Service setProperties background file NOT found '.$objFile->path);
+                $this->logger->error('Captcha Service setProperties background file NOT found '.($objFile ? $objFile->path : '(missing file)'));
             }
         }
         if ($this->debug) $this->logger->info('CaptchaService: setProperties2 VendorbackgroundImage '.$this->VendorbackgroundImage);
@@ -274,12 +298,12 @@ class CaptchaService
         if ($this->config->get('tc_font') && '' !== $this->config->get('tc_font')) {
             if ($this->debug) $this->logger->info('CaptchaService: setProperties tc_font '.(string)$this->config->get('tc_font'));
             $objFile = FilesModel::findByPk((string) $this->config->get('tc_font'));
-            if ($this->debug) $this->logger->info('CaptchaService: setProperties  Path to tc_font '.$objFile->path);
+            if ($this->debug) $this->logger->info('CaptchaService: setProperties  Path to tc_font '.($objFile ? $objFile->path : '(missing file)'));
             if ($objFile && is_file($this->rootDir.$objFile->path)) {
-                if ($this->debug) $this->logger->info('CaptchaService: setProperties  found tc_font '.$objFile->path);
-                $this->captchaFont = $objFile->path;
+                if ($this->debug) $this->logger->info('CaptchaService: setProperties  found tc_font '.($objFile ? $objFile->path : '(missing file)'));
+                $this->VendorcaptchaFont = $this->rootDir.$objFile->path;
             } else {
-                $this->logger->error('Captcha Service setProperties Font file NOT found '.$objFile->path);
+                $this->logger->error('Captcha Service setProperties Font file NOT found '.($objFile ? $objFile->path : '(missing file)'));
             }
         }
     }
@@ -291,10 +315,13 @@ class CaptchaService
         $datas = $this->database->prepare($query)->execute($time)->fetchAllAssoc();
         if (\is_array($datas) && !empty($datas)) {
             foreach ($datas as $data) {
+                if (!preg_match('/^[a-f0-9]{32}$/D', $data['hash'])) {
+                    continue;
+                }
                 $fi = $this->captchaImagePath.$data['hash'].'.png';
                 //if ($this->debug) $this->logger->debug("PBD .. Captcha Service deleteOldEntries File $fi captchaImagePath ".$this->captchaImagePath);
                 //\System::log('PBD .. Captcha Service deleteOldEntries delete File '.$fi, __METHOD__, 'TL_GENERAL');
-                // Pr�fen ob es eine Datei ist � nicht nur ob etwas existiert
+                // PrÃ¯Â¿Â½fen ob es eine Datei ist Ã¯Â¿Â½ nicht nur ob etwas existiert
                 if (is_file($fi)) {
                     if (!unlink($fi) && $this->debug) { $this->logger->debug("PBD .. Captcha Service deleteOldEntries unlink failed: $fi"); }
                 } else {
@@ -363,6 +390,6 @@ class CaptchaService
      */
     protected function createHash()
     {
-        return md5(random_int(0, 99).date('YmdHis').random_int(0, 99));
+        return bin2hex(random_bytes(16));
     }
 }

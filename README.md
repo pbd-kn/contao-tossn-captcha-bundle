@@ -33,3 +33,27 @@
   * The element is only available if it has been activated under Settings (Settings -> Activate Captcha),    
     and possibly configured.  
     
+## Kompatibilitaet und Aktualisierung
+
+- PHP 8.1 oder neuer, Contao 4.13 oder 5.3; GD mit FreeType-Unterstuetzung.
+- Bestehende Formularfelder vom Typ `tossn_captcha` bleiben gueltig. Auch
+  `tossnCaptcha` wird unterstuetzt; keine Umbenennung in der Datenbank erforderlich.
+- Nach Bereitstellung einer neuen Paketversion im Contao Manager aktualisieren,
+  Datenbankmigration ausfuehren (falls die Captcha-Tabelle noch fehlt), Assets
+  installieren und Anwendungscache neu aufbauen.
+- Ein projektspezifisches `templates/form_tossn_captcha.html5` hat Vorrang vor
+  dem Bundle-Template. Bei Problemen dieses mit der neuen Vorlage vergleichen.
+- Danach Formular im Frontend mit richtiger, falscher und leerer Antwort testen;
+  Backend-Vorschau und eigenen Hintergrund/eigene Schrift ebenfalls pruefen.
+- Diese Quellcodeaenderung aktualisiert keine bereits installierten vendor-Kopien.
+
+## Isolierte Kompatibilitaetstests
+
+Ohne Zugriff auf die Datenbank oder Start der Anwendung:
+
+```shell
+php tests/CompatibilityTest.php /pfad/zur/contao-installation/vendor/autoload.php
+```
+
+Die Tests verwenden echte Contao-Klassen, einen Datenbank-Testdouble und GD.
+Sie ersetzen keinen vollstaendigen Formular- und Versandtest in der Zielinstallation.
